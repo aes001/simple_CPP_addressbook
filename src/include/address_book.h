@@ -15,6 +15,18 @@ public:
 		std::string phone_number;
 	};
 
+	// Might have to create the copy constructor
+
+	// Where is the constructor for this?
+		// Need to think of how to store all the data address data...
+		// Could do it with std::vector...
+
+	// Overloading the add opeartor would be nice
+
+	// Overloading the minus operator would be nice too
+
+
+
 	/// Add an entry. Implement in address_book.cpp.
 	void add(Entry person);
 
