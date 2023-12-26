@@ -141,6 +141,26 @@ TEST(AddressBookTests, FindPerson)
 /// {
 /// 	// Perform some test logic
 /// }
+/// 
+TEST(AddressBookTests, DeleteEntry) {
+
+	AddressBook ab = AddTestPeople();
+
+	// Find one random test person
+	std::vector<AddressBook::Entry> results = ab.find("Jayden");
+
+	// We should have found one person
+	ASSERT_EQ(results.size(), 1);
+
+	// Delete the person
+	ab.remove(results[0]);
+
+	// Find the person again
+	results = ab.find("Jayden");
+
+	// We should not have found the person
+	ASSERT_EQ(results.size(), 0);
+}
 
 
 
