@@ -63,7 +63,7 @@ public:
 
 	// Move assignment operator
 	// Convenient for "AddressBook arithmetic"
-	AddressBook& operator=(AddressBook&& ab) {
+	AddressBook& operator=(AddressBook&& ab) noexcept {
 		entries = std::move(ab.entries);
 		return *this;
 	}
@@ -130,6 +130,9 @@ public:
 	* 
 	* Note: It's probably a good idea to call this method in a try catch block as it throws an exception if the entry
 	* does not have a first or last name or if the entry already exists in the address book.
+	* This method also does a linear search on the entries vector to check if the entry already exists.
+	* It's going to get slower as the entries vector gets bigger. (Future improvement) Perhaps use a map? That will
+	* make it faster but will take more memory.
 	*/
 	void add(const Entry& person);
 
@@ -143,14 +146,15 @@ public:
 	* 
 	* Note: Probably also a good idea to call this method in a try catch block as it throws an exception if the entry 
 	* does not exist.
-	* It does that so we can know if an entry was removed or not
+	* It does that so we can know if an entry was removed or not.
+	* Also does a linear search on the entries vector to check if the entry exists.
 	*/
 	void remove(const Entry& person);
 
 
 	/*
 	* @brief Return all entries sorted by first name
-* 
+	* 
 	* @return std::vector<AddressBook::Entry> The entries sorted by first name
 	*
 	* Note: This function mutates the entries vector and returns it
