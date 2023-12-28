@@ -21,26 +21,17 @@ public:
 
 		// Overload the equality operator so we can compare two entries
 		// This is useful for functions like std::find and std::remove
-		bool operator==(const Entry& rhs) {
-			return this->first_name == rhs.first_name && this->last_name == rhs.last_name && this->phone_number == rhs.phone_number;
-		}
+		bool operator==(const Entry& rhs);
 
-		friend bool operator==(const Entry& lhs, const Entry& rhs) {
-			return lhs.first_name == rhs.first_name && lhs.last_name == rhs.last_name && lhs.phone_number == rhs.phone_number;
-		}
+		friend bool operator==(const Entry& lhs, const Entry& rhs);
 
 		// Overload the inequality operator so we can compare two entries
 		// Added for completeness
-		friend bool operator!=(const Entry& lhs, const Entry& rhs) {
-			return !(lhs == rhs);
-		}
+		friend bool operator!=(const Entry& lhs, const Entry& rhs);
 
 		// Overload the output operator so we can print an entry
 		// This is useful for debugging
-		friend std::ostream& operator<<(std::ostream& os, const Entry& e) {
-			os << e.first_name << " " << e.last_name << " " << e.phone_number;
-			return os;
-		}
+		friend std::ostream& operator<<(std::ostream& os, const Entry& e);
 	};
 
 private:
@@ -56,20 +47,15 @@ public:
 	AddressBook(const AddressBook& ab) : entries(ab.entries) {}
 
 	// Copy assignment operator
-	AddressBook& operator=(const AddressBook& ab) {
-		entries = ab.entries;
-		return *this;
-	}
+	AddressBook& operator=(const AddressBook& ab);
 
 	// Move assignment operator
 	// Convenient for "AddressBook arithmetic"
-	AddressBook& operator=(AddressBook&& ab) noexcept {
-		entries = std::move(ab.entries);
-		return *this;
-	}
+	AddressBook& operator=(AddressBook&& ab) noexcept;
+
 
 	/*
-	* @brief Overload the plus operator so we can combine two address books together (Ignores duplicate entries)
+	* @brief Overload the plus operator so we can combine two address books together (Ignoring duplicate entries)
 	* 
 	* Adds all entries in rhs to lhs ignoring duplicate entries and returns the result
 	* 
@@ -79,23 +65,12 @@ public:
 	* This might be convenient if we want to combine two address books together rather than having to add each entry
 	* in a for loop
 	*/
-	AddressBook operator+(const AddressBook& rhs) {
-		AddressBook ab = AddressBook(*this);
-		for (Entry entry : rhs.entries) {
-			try {
-				ab.add(entry);
-			} catch (std::invalid_argument& e) { } // Ignore duplicate or empty entries
-		}
-		return ab;
-	}
-
-	friend AddressBook operator+(const AddressBook& rhs, const AddressBook& lhs) {
-		return rhs + lhs;
-	}
+	AddressBook operator+(const AddressBook& rhs);
+	friend AddressBook operator+(const AddressBook& lhs, const AddressBook& rhs);
 
 
 	/*
-	* @brief Overload the minus operator so we can subtract two address books (Ignores entries that don't exist)
+	* @brief Overload the minus operator so we can subtract two address books (Ignoring entries that don't exist)
 	* 
 	* Removes all entries in rhs from lhs ignoring entries that don't exist and returns the result
 	* 
@@ -105,19 +80,8 @@ public:
 	* This might be convenient if we want to remove entries from an address book that are in another address book
 	* Like if we want to remove all the entries in a known spam address book from our address book
 	*/
-	AddressBook operator-(const AddressBook& rhs) {
-		AddressBook ab = AddressBook(*this);
-		for (Entry entry : rhs.entries) {
-			try {
-				ab.remove(entry);
-			} catch (std::invalid_argument& e) { } // Ignore entries that don't exist
-		}
-		return ab;
-	}
-
-	friend AddressBook operator-(const AddressBook& rhs, const AddressBook& lhs) {
-		return rhs - lhs;
-	}
+	AddressBook operator-(const AddressBook& rhs);
+	friend AddressBook operator-(const AddressBook& lhs, const AddressBook& rhs);
 
 
 	/*

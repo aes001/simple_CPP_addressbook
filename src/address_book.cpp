@@ -8,6 +8,84 @@
 #include <iostream>
 
 
+bool AddressBook::Entry::operator==(const AddressBook::Entry& rhs)
+{
+	return first_name == rhs.first_name && last_name == rhs.last_name && phone_number == rhs.phone_number;
+}
+
+
+bool operator==(const AddressBook::Entry& lhs, const AddressBook::Entry& rhs)
+{
+	return lhs.first_name == rhs.first_name && lhs.last_name == rhs.last_name && lhs.phone_number == rhs.phone_number;
+}
+
+
+bool operator!=(const AddressBook::Entry& lhs, const AddressBook::Entry& rhs)
+{
+	return !(lhs == rhs);
+}
+
+
+std::ostream& operator<<(std::ostream& os, const AddressBook::Entry& e)
+{
+	os << e.first_name << " " << e.last_name << " " << e.phone_number;
+	return os;
+}
+
+
+AddressBook& AddressBook::operator=(const AddressBook& ab)
+{
+	entries = ab.entries;
+	return *this;
+}
+
+
+AddressBook& AddressBook::operator=(AddressBook&& ab) noexcept
+{
+	entries = std::move(ab.entries);
+	return *this;
+}
+
+
+AddressBook AddressBook::operator+(const AddressBook& rhs)
+{
+	AddressBook ab = AddressBook(*this);
+	for (Entry entry : rhs.entries) {
+		try {
+			ab.add(entry);
+		}
+		catch (std::invalid_argument& e) {} // Ignore duplicate or empty entries
+	}
+	return ab;
+}
+
+
+AddressBook operator+(const AddressBook& lhs, const AddressBook& rhs)
+{
+	return lhs + rhs;
+}
+
+
+AddressBook AddressBook::operator-(const AddressBook& rhs)
+{
+	AddressBook ab = AddressBook(*this);
+	for (Entry entry : rhs.entries) {
+		try {
+			ab.remove(entry);
+		}
+		catch (std::invalid_argument& e) {} // Ignore entries that don't exist
+	}
+	return ab;
+}
+
+
+AddressBook operator-(const AddressBook& lhs, const AddressBook& rhs)
+{
+	return lhs - rhs;
+}
+
+
+
 void AddressBook::add(const AddressBook::Entry& person)
 {
 	// Check if the entry has a first name and/or a last name
