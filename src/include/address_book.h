@@ -4,7 +4,11 @@
 #include <vector>
 #include <ostream>
 
-/// The main Address Book implementation. Extend as required.
+/*
+* @brief A class to store address book data
+* 
+* This class stores address book data and provides methods to add, remove, and find entries
+*/
 class AddressBook
 {
 public:
@@ -16,11 +20,23 @@ public:
 		std::string phone_number;
 
 		// Overload the equality operator so we can compare two entries
+		// This is useful for functions like std::find and std::remove
 		bool operator==(const Entry& rhs) {
 			return this->first_name == rhs.first_name && this->last_name == rhs.last_name && this->phone_number == rhs.phone_number;
 		}
 
+		friend bool operator==(const Entry& lhs, const Entry& rhs) {
+			return lhs.first_name == rhs.first_name && lhs.last_name == rhs.last_name && lhs.phone_number == rhs.phone_number;
+		}
+
+		// Overload the inequality operator so we can compare two entries
+		// Added for completeness
+		friend bool operator!=(const Entry& lhs, const Entry& rhs) {
+			return !(lhs == rhs);
+		}
+
 		// Overload the output operator so we can print an entry
+		// This is useful for debugging
 		friend std::ostream& operator<<(std::ostream& os, const Entry& e) {
 			os << e.first_name << " " << e.last_name << " " << e.phone_number;
 			return os;
@@ -33,34 +49,139 @@ private:
 
 public:
 
-	// Might have to create the copy constructor
+	// Default constructor
+	AddressBook() {}
 
-	// Where is the constructor for this?
-		// Need to think of how to store all the data address data...
-		// Could do it with std::vector...
+	// Copy constructor
+	AddressBook(const AddressBook& ab) : entries(ab.entries) {}
 
-	// Overloading the add opeartor would be nice
+	// Copy assignment operator
+	AddressBook& operator=(const AddressBook& ab) {
+		entries = ab.entries;
+		return *this;
+	}
 
-	// Overloading the minus operator would be nice too
+	// Move assignment operator
+	// Convenient for "AddressBook arithmetic"
+	AddressBook& operator=(AddressBook&& ab) {
+		entries = std::move(ab.entries);
+		return *this;
+	}
 
-	// If I'm using std::map then I need to overload the [] operator
-	// to prevent adding empty entries
+	/*
+	* @brief Overload the plus operator so we can combine two address books together (Ignores duplicate entries)
+	* 
+	* Adds all entries in rhs to lhs ignoring duplicate entries and returns the result
+	* 
+	* @param rhs The address book to add to this address book
+	* @return AddressBook The result of adding rhs to this address 
+	* 
+	* This might be convenient if we want to combine two address books together rather than having to add each entry
+	* in a for loop
+	*/
+	AddressBook operator+(const AddressBook& rhs) {
+		AddressBook ab = AddressBook(*this);
+		for (Entry entry : rhs.entries) {
+			try {
+				ab.add(entry);
+			} catch (std::invalid_argument& e) { } // Ignore duplicate or empty entries
+		}
+		return ab;
+	}
+
+	friend AddressBook operator+(const AddressBook& rhs, const AddressBook& lhs) {
+		return rhs + lhs;
+	}
 
 
+	/*
+	* @brief Overload the minus operator so we can subtract two address books (Ignores entries that don't exist)
+	* 
+	* Removes all entries in rhs from lhs ignoring entries that don't exist and returns the result
+	* 
+	* @param rhs The address book to subtract from this address book
+	* @return AddressBook The result of subtracting rhs from this address 
+	* 
+	* This might be convenient if we want to remove entries from an address book that are in another address book
+	* Like if we want to remove all the entries in a known spam address book from our address book
+	*/
+	AddressBook operator-(const AddressBook& rhs) {
+		AddressBook ab = AddressBook(*this);
+		for (Entry entry : rhs.entries) {
+			try {
+				ab.remove(entry);
+			} catch (std::invalid_argument& e) { } // Ignore entries that don't exist
+		}
+		return ab;
+	}
 
-	/// Add an entry. Implement in address_book.cpp.
-	void add(Entry person);
+	friend AddressBook operator-(const AddressBook& rhs, const AddressBook& lhs) {
+		return rhs - lhs;
+	}
 
-	/// Remove an entry. Implement in address_book.cpp.
-	void remove(Entry person);
 
-	/// Return all entries sorted by first names. Implement in address_book.cpp.
+	/*
+	* @brief Add a person to the address book
+	* 
+	* @param person The person to add
+	* @throws std::invalid_argument if the entry does not have a first or last name
+	* @throws std::invalid_argument if the entry already exists
+	* @return void
+	* 
+	* Note: It's probably a good idea to call this method in a try catch block as it throws an exception if the entry
+	* does not have a first or last name or if the entry already exists in the address book.
+	*/
+	void add(const Entry& person);
+
+
+	/*
+	* @brief Remove a person from the address book
+	* 
+	* @param person The person to remove
+	* @throws std::invalid_argument if the entry does not exist
+	* @return void
+	* 
+	* Note: Probably also a good idea to call this method in a try catch block as it throws an exception if the entry 
+	* does not exist.
+	* It does that so we can know if an entry was removed or not
+	*/
+	void remove(const Entry& person);
+
+
+	/*
+	* @brief Return all entries sorted by first name
+* 
+	* @return std::vector<AddressBook::Entry> The entries sorted by first name
+	*
+	* Note: This function mutates the entries vector and returns it
+	* I figured it was ok to mutate the entries vector because if the function is called twice in a row,
+	* the second call will not do anything because the entries vector is already sorted.
+	*/
 	std::vector<Entry> sortedByFirstName();
 
-	/// Return all entries sorted by last names. Implement in address_book.cpp.
+
+	/*
+	* @brief Return all entries sorted by last name
+	* 
+	* @return std::vector<AddressBook::Entry> The entries sorted by last name
+	*
+	* Note: This function mutates the entries vector and returns it
+	* Same reason as sortedByFirstName()
+	*/
 	std::vector<Entry> sortedByLastName();
 
-	/// Return all matching entries. Implement in address_book.cpp.
+
+	/*
+	* @brief Return all entries that match the prefix (case insensitive)
+	* 
+	* Performs a case insensitive linear search on the entries vector and returns all entries that match the prefix
+	* 
+	* @param prefix The prefix to match
+	* @return std::vector<AddressBook::Entry> The entries that match the prefix
+	* 
+	* Would be better to use a prefix tree for this but time constraints and potentially will take more memory as 
+	* the tree will need to store the first and last name of each entry. (Future improvement)
+	*/
 	std::vector<Entry> find(const std::string & name);
 
 };
