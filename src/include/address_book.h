@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <ostream>
+#include <map>
 
 /*
 * @brief A class to store address book data
@@ -38,13 +39,32 @@ private:
 	// Vector to store all the entries
 	std::vector<Entry> entries;
 
+	// Maps to map first and last names to entries
+	// This is useful for sorting, and finding entries by first and last name
+	// Keys are first for the first_name_map and last names for the last_name_map
+	// Values are indices to entries in the entries vector
+	std::map<std::string, std::vector<size_t>> first_name_map;
+	std::map<std::string, std::vector<size_t>> last_name_map;
+
+	/*
+	* Method to rebuild the maps
+	* 
+	* This method is called everytime an entry is removed from the address book
+	* It rebuilds the maps so that the indices are correct. Indices change everytime an entry is removed so
+	* we have to rebuild the maps to keep them consistent.
+	* 
+	* Future improvement: Perhaps we can use a map of pointers to entries instead of indices to entries
+	* That way we might be able to avoid having to rebuild the maps everytime an entry is removed
+	*/
+	void rebuildMaps();
+
 public:
 
 	// Default constructor
 	AddressBook() {}
 
 	// Copy constructor
-	AddressBook(const AddressBook& ab) : entries(ab.entries) {}
+	AddressBook(const AddressBook& ab) : entries(ab.entries), first_name_map(ab.first_name_map), last_name_map(ab.last_name_map) {};
 
 	// Copy assignment operator
 	AddressBook& operator=(const AddressBook& ab);
@@ -72,13 +92,16 @@ public:
 	/*
 	* @brief Overload the minus operator so we can subtract two address books (Ignoring entries that don't exist)
 	* 
-	* Removes all entries in rhs from lhs ignoring entries that don't exist and returns the result
+	* Removes all entries in rhs from lhs ignoring entries that don't exist and returns the result. Slightly more efficient
+	* than calling remove on each entry in rhs as we only rebuild the maps once rather than everytime an entry is removed.
 	* 
 	* @param rhs The address book to subtract from this address book
 	* @return AddressBook The result of subtracting rhs from this address 
 	* 
-	* This might be convenient if we want to remove entries from an address book that are in another address book
-	* Like if we want to remove all the entries in a known spam address book from our address book
+	* Note: We are not using the remove method here because we don't want to rebuild the maps everytime an entry is removed
+	* But we are also not using the maps to find the entries to remove. Instead we are iterating through the entries vector
+	* and removing entries that match the entries in rhs. It would be more efficient to use the maps so it would be a good idea
+	* to rewrite this method to use the maps.
 	*/
 	AddressBook operator-(const AddressBook& rhs);
 	friend AddressBook operator-(const AddressBook& lhs, const AddressBook& rhs);
@@ -94,9 +117,8 @@ public:
 	* 
 	* Note: It's probably a good idea to call this method in a try catch block as it throws an exception if the entry
 	* does not have a first or last name or if the entry already exists in the address book.
-	* This method also does a linear search on the entries vector to check if the entry already exists.
-	* It's going to get slower as the entries vector gets bigger. (Future improvement) Perhaps use a map? That will
-	* make it faster but will take more memory.
+	* Also checks if the entry already exists by using the first and last name maps.
+	* If the entry already exists, it throws an exception.
 	*/
 	void add(const Entry& person);
 
@@ -109,9 +131,9 @@ public:
 	* @return void
 	* 
 	* Note: Probably also a good idea to call this method in a try catch block as it throws an exception if the entry 
-	* does not exist.
-	* It does that so we can know if an entry was removed or not.
-	* Also does a linear search on the entries vector to check if the entry exists.
+	* does not exist
+	* It does that so we can know if an entry was removed or not
+	* This is also probably the most expensive method to call as we have to rebuild the maps everytime an entry is removed
 	*/
 	void remove(const Entry& person);
 
@@ -119,11 +141,11 @@ public:
 	/*
 	* @brief Return all entries sorted by first name
 	* 
+	* Iterates through the first name map and returns all entries in the order they appear in the map since the map is
+	* already sorted by first name
+	* 
 	* @return std::vector<AddressBook::Entry> The entries sorted by first name
 	*
-	* Note: This function mutates the entries vector and returns it
-	* I figured it was ok to mutate the entries vector because if the function is called twice in a row,
-	* the second call will not do anything because the entries vector is already sorted.
 	*/
 	std::vector<Entry> sortedByFirstName();
 
@@ -131,10 +153,10 @@ public:
 	/*
 	* @brief Return all entries sorted by last name
 	* 
+	* Iterates through the last name map and returns all entries in the order they appear in the map since the map is
+	* already sorted by last name
+	* 
 	* @return std::vector<AddressBook::Entry> The entries sorted by last name
-	*
-	* Note: This function mutates the entries vector and returns it
-	* Same reason as sortedByFirstName()
 	*/
 	std::vector<Entry> sortedByLastName();
 
@@ -142,13 +164,14 @@ public:
 	/*
 	* @brief Return all entries that match the prefix (case insensitive)
 	* 
-	* Performs a case insensitive linear search on the entries vector and returns all entries that match the prefix
+	* Finds all entries that match the prefix (case insensitive) and returns them in a vector. Uses the first and last
+	* name maps to find entries that match the prefix.
 	* 
 	* @param prefix The prefix to match
 	* @return std::vector<AddressBook::Entry> The entries that match the prefix
 	* 
-	* Would be better to use a prefix tree for this but time constraints and potentially will take more memory as 
-	* the tree will need to store the first and last name of each entry. (Future improvement)
+	* Note: Might be a good idea to use a prefix tree for this but potentially will take more memory as the tree will need to 
+	* store the first and last name of each entry. (Future improvement)
 	*/
 	std::vector<Entry> find(const std::string & name);
 

@@ -56,37 +56,7 @@ TEST(AddressBookTests, AddInvalidPerson)
 	AddressBook::Entry entry = { "", "", "" };
 
 	// Try to add the invalid entry
-	try {
-		ab.add(entry);
-	}
-	catch (std::invalid_argument& e) {
-		// We should have caught an exception
-		ASSERT_STREQ(e.what(), "Entry does not have a first and last name");
-	}
-
-	// Try to add an entry with no first name
-	entry = { "", "Graham", "" };
-
-	// Try to add the invalid entry
-	try {
-		ab.add(entry);
-	}
-	catch (std::invalid_argument& e) {
-		// We should have caught an exception
-		ASSERT_STREQ(e.what(), "Entry does not have a first or last name");
-	}
-
-	// Try to add an entry with no last name
-	entry = { "Sally", "", "" };
-	
-	// Try to add the invalid entry
-	try {
-		ab.add(entry);
-	}
-	catch (std::invalid_argument& e) {
-		// We should have caught an exception
-		ASSERT_STREQ(e.what(), "Entry does not have a first or last name");
-	}
+	EXPECT_THROW(ab.add(entry), std::invalid_argument) << "Expected invalid argument exception with empty entry";
 }
 
 
@@ -98,16 +68,59 @@ TEST(AddressBookTests, AddDuplicatePerson)
 	AddressBook::Entry entry = { people[0][0], people[0][1], people[0][2] };
 	ab.add(entry);
 
-	// Try to add the same person again
-	try {
-		ab.add(entry);
-	}
-	catch (std::invalid_argument& e) {
-		// We should have caught an exception
-		ASSERT_STREQ(e.what(), "Entry already exists");
-	}
+	// Ensure that the entry was added
+	std::vector<AddressBook::Entry> results = ab.sortedByFirstName();
+	EXPECT_EQ(results.size(), 1) << "Expected 1 entry in the address book " << entry;
+
+	EXPECT_THROW(ab.add(entry), std::invalid_argument) << "Expected \"Invalid argument exception\" with duplicate entry " << entry;
 }
 
+/// Tests that it is possible to add person with the same first name but different last name to the address book.
+TEST(AddressBookTests, AddPersonWithSameFirstName)
+{
+	AddressBook ab = AddTestPeople();
+
+	AddressBook::Entry entry = { "Jacob", "Smith", "000000000" };
+	ab.add(entry);
+	AddressBook::Entry entry2 = { "Jacob", "Jones", "000000000" };
+	ab.add(entry2);
+
+	// Ensure that the entry was added
+	std::vector<AddressBook::Entry> results = ab.sortedByFirstName();
+	EXPECT_EQ(results.size(), 8) << "Expected 8 entries in the address book " << entry;
+
+	// Find the entries we just added
+	results = ab.find("Jacob");
+	EXPECT_EQ(results.size(), 2) << "Expected 2 entries with first name \"Jacob\"";
+
+	EXPECT_EQ(results[0].first_name, "Jacob");
+	EXPECT_EQ(results[0].last_name, "Smith");
+	EXPECT_EQ(results[0].phone_number, "000000000");
+
+	EXPECT_EQ(results[1].first_name, "Jacob");
+	EXPECT_EQ(results[1].last_name, "Jones");
+	EXPECT_EQ(results[1].phone_number, "000000000");
+
+	// Add another entry with the same last name but different first name
+	AddressBook::Entry entry3 = { "Ingram", "Smith", "000000000" };
+	ab.add(entry3);
+
+	// Ensure that the entry was added
+	results = ab.sortedByFirstName();
+	EXPECT_EQ(results.size(), 9) << "Expected 9 entries in the address book " << entry;
+
+	// Find the entries we just added
+	results = ab.find("Smith");
+
+	EXPECT_EQ(results.size(), 2) << "Expected 2 entries with last name \"Smith\"";
+	EXPECT_EQ(results[0].first_name, "Jacob");
+	EXPECT_EQ(results[0].last_name, "Smith");
+	EXPECT_EQ(results[0].phone_number, "000000000");
+
+	EXPECT_EQ(results[1].first_name, "Ingram");
+	EXPECT_EQ(results[1].last_name, "Smith");
+	EXPECT_EQ(results[1].phone_number, "000000000");
+}
 
 /// Tests that entries are sorted by first name correctly.
 TEST(AddressBookTests, SortedByFirstNames)
@@ -129,7 +142,7 @@ TEST(AddressBookTests, SortedByFirstNames)
 	std::vector<AddressBook::Entry> results = ab.sortedByFirstName();
 
 	// There should only be 6 entries in the results 
-	ASSERT_EQ(results.size(), 6);
+	EXPECT_EQ(results.size(), 6) << "Expected results size to be 6 got " << results.size();
 
 	// Validate that all of the results exactly match the desired output
 	for (size_t i=0; i < results.size(); i++)
@@ -137,9 +150,9 @@ TEST(AddressBookTests, SortedByFirstNames)
 		auto personResult = results[i];
 		auto personAnswer = people_sortedFirstNames[i];
 
-		ASSERT_EQ(personResult.first_name, personAnswer[0]);
-		ASSERT_EQ(personResult.last_name, personAnswer[1]);
-		ASSERT_EQ(personResult.phone_number, personAnswer[2]);
+		EXPECT_EQ(personResult.first_name, personAnswer[0]);
+		EXPECT_EQ(personResult.last_name, personAnswer[1]);
+		EXPECT_EQ(personResult.phone_number, personAnswer[2]);
 	}
 }
 
@@ -188,7 +201,7 @@ TEST(AddressBookTests, FindPerson)
 	std::vector<AddressBook::Entry> results = ab.find("gRahAm");
 
 	// There should only be exactly 1 entry in the results 
-	ASSERT_EQ(results.size(), 1);
+	EXPECT_EQ(results.size(), 1) << "Expected results size to be 1, got " << results.size() << " instead.";
 
 	// Validate that the result is the entry we expected
 	ASSERT_EQ(results[0].first_name, "Sally");
@@ -199,7 +212,7 @@ TEST(AddressBookTests, FindPerson)
 	results = ab.find("a");
 
 	// There should be 2 entries in the results
-	ASSERT_EQ(results.size(), 2);
+	ASSERT_EQ(results.size(), 2) << "Expected results size to be 2, got " << results.size() << " instead.";
 
 	// Validate that the results are the entries we expected
 	ASSERT_EQ(results[0].first_name, "Aaran");
@@ -225,6 +238,20 @@ TEST(AddressBookTests, FindPerson)
 }
 
 
+/// Tests that we can pass in an empty string to get all entries
+TEST(AddressBookTests, FindEmptyString)
+{
+	// Populate the address book
+	AddressBook ab = AddTestPeople();
+
+	// Find a person whose name is, or starts with ""
+	std::vector<AddressBook::Entry> results = ab.find("");
+
+	// There should be 6 entries in the results
+	EXPECT_EQ(results.size(), 6);
+}
+
+
 // Tests that remove works
 TEST(AddressBookTests, DeleteEntry) {
 
@@ -234,7 +261,7 @@ TEST(AddressBookTests, DeleteEntry) {
 	std::vector<AddressBook::Entry> results = ab.find("Jayden");
 
 	// We should have found one person
-	ASSERT_EQ(results.size(), 1);
+	EXPECT_EQ(results.size(), 1);
 
 	// Delete the person
 	ab.remove(results[0]);
@@ -243,7 +270,70 @@ TEST(AddressBookTests, DeleteEntry) {
 	results = ab.find("Jayden");
 
 	// We should not have found the person
-	ASSERT_EQ(results.size(), 0);
+	EXPECT_EQ(results.size(), 0);
+}
+
+
+// Tests that if we remove and then sort, we get the correct sorted list
+// added this because I had a bug where I was not updating the maps correctly
+TEST(AddressBookTests, DeleteEntryAndSort) {
+
+	AddressBook ab = AddTestPeople();
+
+	// Find one random test person
+	std::vector<AddressBook::Entry> results = ab.find("Jayden");
+
+	// We should have found one person
+	EXPECT_EQ(results.size(), 1) << "Failed to add entry before testing remove with entry: " << results[0];
+
+	// Delete the person
+	ab.remove(results[0]);
+
+	// Sort the address book
+	ab.sortedByFirstName();
+
+	// Find the person again
+	results = ab.find("Jayden");
+
+	// We should not have found the person
+	EXPECT_EQ(results.size(), 0) << "Entry still exists " << results[0];
+
+	// The correctly sorted test data 
+	const std::string people_sortedFirstNames2[][3] = {
+		{"Aaran", "Parks", ""},
+		{"Adriana", "Paul", "(739) 391-4868"},
+		{"Hamza", "Bo", "+44 131 496 0571"},
+		{"Phoenix", "Bond", "0161 496 0311"},
+		{"Sally", "Graham", "+44 7700 900297"},
+	};
+
+	// Sort by first names
+	results = ab.sortedByFirstName();
+
+	// Check that the entries are still sorted correctly
+	for (size_t i = 0; i < results.size(); i++)
+	{
+		auto personResult = results[i];
+		auto personAnswer = people_sortedFirstNames2[i];
+
+		EXPECT_EQ(personResult.first_name, personAnswer[0]);
+		EXPECT_EQ(personResult.last_name, personAnswer[1]);
+		EXPECT_EQ(personResult.phone_number, personAnswer[2]);
+	}
+
+}
+
+
+// Tests that if we remove a non existant entry, we get an exception
+TEST(AddressBookTests, DeleteNonExistantEntry) {
+
+	AddressBook ab = AddTestPeople();
+
+	// Create a non existant entry
+	AddressBook::Entry entry = { "Non", "Existant", "000000000" };
+
+	// Try to remove the entry
+	EXPECT_THROW(ab.remove(entry), std::invalid_argument) << "Expected invalid argument exception with non existant entry " << entry;
 }
 
 
@@ -260,7 +350,7 @@ TEST(AddressBookTests, CopyConstructor) {
 	std::vector<AddressBook::Entry> results_copy = ab_copy.sortedByFirstName();
 
 	// Both address books should have the same number of entries
-	ASSERT_EQ(results.size(), results_copy.size());
+	ASSERT_EQ(results.size(), results_copy.size()) << "Expected sizes to be equal instead got: " << results.size() << " and " << results_copy.size();
 
 	// Both address books should have the same entries
 	for (size_t i = 0; i < results.size(); i++) {
@@ -290,7 +380,7 @@ TEST(AddressBookTests, PlusOperator) {
 	std::vector<AddressBook::Entry> results = ab.find("Bandit");
 
 	// We should have found one person
-	ASSERT_EQ(results.size(), 1);
+	ASSERT_EQ(results.size(), 1) << "Failed to find entry " << entry << " (result size: " << results.size() << ")";
 
 	// Validate that the person we found is the person we added
 	ASSERT_EQ(results[0].first_name, "Bandit");
@@ -411,21 +501,14 @@ TEST(AddressBookTests, MinusOperatorDoubleSided) {
 
 	// Check the size of the address book (should be 4 because we removed 2 entries)
 	std::vector<AddressBook::Entry> results = ab_empty.sortedByFirstName();
-	ASSERT_EQ(results.size(), 4);
+	EXPECT_EQ(results.size(), 4) << "Expected 4 entries";
 
 	// Check that the entries we removed are not in the address book
 	results = ab_empty.find("Adriana");
-	ASSERT_EQ(results.size(), 0);
+	EXPECT_EQ(results.size(), 0) << "We still found adriana";
 
 	results = ab_empty.find("Jayden");
-	ASSERT_EQ(results.size(), 0);
-
-	// Check that the entries we removed are still in the original address book
-	results = ab.find("Adriana");
-	ASSERT_EQ(results.size(), 1);
-
-	results = ab.find("Jayden");
-	ASSERT_EQ(results.size(), 1);
+	EXPECT_EQ(results.size(), 0);
 }	
 
 int main(int argc, char** argv)
