@@ -42,7 +42,7 @@ private:
 	// Maps to map first and last names to entries
 	// This is useful for sorting, and finding entries by first and last name
 	// Keys are first for the first_name_map and last names for the last_name_map
-	// Values are indices to entries in the entries vector
+	// Values are a vector of indices to entries in the entries vector
 	std::map<std::string, std::vector<size_t>> first_name_map;
 	std::map<std::string, std::vector<size_t>> last_name_map;
 
@@ -99,9 +99,9 @@ public:
 	* @return AddressBook The result of subtracting rhs from this address 
 	* 
 	* Note: We are not using the remove method here because we don't want to rebuild the maps everytime an entry is removed
-	* But we are also not using the maps to find the entries to remove. Instead we are iterating through the entries vector
-	* and removing entries that match the entries in rhs. It would be more efficient to use the maps so it would be a good idea
-	* to rewrite this method to use the maps.
+	* that way we save some time and memory. We only rebuild the maps once at the end.
+	* But we are also not using the maps to find the entries to remove. Instead we are using std::remove_if and looping through
+	* the rhs entries vector to find the entries to remove. This is quite inefficient making this method quite expensive to call.
 	*/
 	AddressBook operator-(const AddressBook& rhs);
 	friend AddressBook operator-(const AddressBook& lhs, const AddressBook& rhs);
@@ -133,7 +133,7 @@ public:
 	* Note: Probably also a good idea to call this method in a try catch block as it throws an exception if the entry 
 	* does not exist
 	* It does that so we can know if an entry was removed or not
-	* This is also probably the most expensive method to call as we have to rebuild the maps everytime an entry is removed
+	* This is also an expensive method to call as we have to rebuild the maps everytime an entry is removed
 	*/
 	void remove(const Entry& person);
 

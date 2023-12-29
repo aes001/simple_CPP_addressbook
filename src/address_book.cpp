@@ -137,7 +137,7 @@ void AddressBook::add(const AddressBook::Entry& person)
 		}
 	} catch (std::out_of_range& e) {
 		// Entry does not exist (good)
-		// This gets throwm if we try to access an entry that does not exist in the map
+		// This gets thrown if we try to access an entry that does not exist in the map
 	}
 
 	// Check if the entry already exists for the last name
@@ -200,6 +200,7 @@ void AddressBook::remove(const AddressBook::Entry& person)
 		throw std::invalid_argument("Entry does not exist");
 	}
 
+	// If we didn't find the entry using the first name map, check in the last name map
 	if (match_index == -1)
 	{
 		// Check if the entry exists in the last name map
@@ -314,8 +315,7 @@ std::vector<AddressBook::Entry> AddressBook::find(const std::string& prefix)
 	// This way we can avoid adding duplicate entries to the output vector
 	std::unordered_map<Entry, bool> found_entry_map;
 
-	// Iterate through the first and last name maps and add all the entries to the output vector
-	if (lower_bound_it_f_name != first_name_map.end()) {
+	if (lower_bound_it_f_name != first_name_map.end()) { // Check if the lower bound iterator is valid (if the map found something)
 		// Iterate through the first name map starting at the lower bound iterator and stop when we reach the end of the map 
 		// or the prefix is no longer a prefix of the first name
 		for (auto& it = lower_bound_it_f_name; it != first_name_map.end() && it->first.find(prefix_lower) == 0; it++) {
