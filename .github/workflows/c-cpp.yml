@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: cmake configure
-      run: mkdir ../test_build;pwd;ls -lah; cd ../test_build; cmake ../foundry_take_home_test
+      run: pwd; tree
     - name: cmake build
       run: cd /home/runner/work/foundry_take_home_test/test_build; cmake --build
     - name: make
