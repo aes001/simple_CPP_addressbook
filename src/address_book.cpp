@@ -26,7 +26,8 @@ bool operator!=(const AddressBook::Entry& lhs, const AddressBook::Entry& rhs)
 	return !(lhs == rhs);
 }
 
-
+// Welcome to the merge conflice
+// Blah blah blah blah blah this is a merge conflict
 std::ostream& operator<<(std::ostream& os, const AddressBook::Entry& e)
 {
 	os << e.first_name << " " << e.last_name << " " << e.phone_number;
