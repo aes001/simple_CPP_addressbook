@@ -511,11 +511,6 @@ TEST(AddressBookTests, MinusOperatorDoubleSided) {
 	EXPECT_EQ(results.size(), 0);
 }
 
-// This is a failing test to experiment with github actions
-TEST(AddressBookTests, FailingTest_CI_Experiment) {
-	ASSERT_EQ(7, 4);
-}
-
 int main(int argc, char** argv)
 {
 	::testing::InitGoogleTest(&argc, argv);
