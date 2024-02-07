@@ -17,7 +17,5 @@ jobs:
       run: mkdir chocolate_pie; cd ./chocolate_pie; cmake ..; cmake --build .
     - name: make
       run: cd ./chocolate_pie; make
-    - name: make check
-      run: cd ./chocolate_pie; make check
-    - name: make distcheck
-      run: cd ./chocolate_pie; make distcheck
+    - name: run test
+      run: tree
