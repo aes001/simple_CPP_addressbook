@@ -18,4 +18,4 @@ jobs:
     - name: make
       run: cd ./chocolate_pie; make
     - name: run test
-      run: tree
+      run: ./chocolate_pie/test/AddressBookTests
