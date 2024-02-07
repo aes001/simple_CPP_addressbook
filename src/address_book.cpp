@@ -26,7 +26,8 @@ bool operator!=(const AddressBook::Entry& lhs, const AddressBook::Entry& rhs)
 	return !(lhs == rhs);
 }
 
-
+// We are adding a comment here because we will then add a comment in the same place in the other branch
+// This is to create a merge conflict
 std::ostream& operator<<(std::ostream& os, const AddressBook::Entry& e)
 {
 	os << e.first_name << " " << e.last_name << " " << e.phone_number;
