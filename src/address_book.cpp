@@ -43,7 +43,7 @@ namespace std
 	{
 		size_t operator()(const AddressBook::Entry& e) const
 		{
-			return hash<string>()(e.first_name + e.last_name + e.phone_number)
+			return hash<string>()(e.first_name + e.last_name + e.phone_number);
 		}
 	};
 }
