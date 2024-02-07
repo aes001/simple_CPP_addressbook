@@ -16,8 +16,8 @@ jobs:
     - name: cmake configure
       run: mkdir chocolate_pie; cd ./chocolate_pie; cmake ..; cmake --build .
     - name: make
-      run: pwd
+      run: cd ./chocolate_pie; make
     - name: make check
-      run: make check
+      run: cd ./chocolate_pie; make check
     - name: make distcheck
-      run: make distcheck
+      run: cd ./chocolate_pie; make distcheck
