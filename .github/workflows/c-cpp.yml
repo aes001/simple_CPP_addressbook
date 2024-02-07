@@ -13,8 +13,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: configure
-      run: ./configure
+    - name: cmake
+      run: cmake ../foundry_take_home_test; cmake --build
     - name: make
       run: make
     - name: make check
