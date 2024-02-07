@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: cmake configure
-      run: ./test_configure.sh
+      run: mkdir chocolate_pie; cd ./chocolate_pie; cmake ..; cmake --build 
     - name: make
       run: make
     - name: make check
