@@ -1,4 +1,6 @@
 # C++ Addressbook Class
+An implementation of an Addressbook in C++.
+
 ## Requirements
  - CMake 3.20 or higher
  - A compiler supporting C++20. e.g.
