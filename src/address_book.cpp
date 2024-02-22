@@ -43,8 +43,6 @@ namespace std
 	{
 		size_t operator()(const AddressBook::Entry& e) const
 		{
-			// I added a comment here please remove later
-			// Please remove later I'm trying to get a merge conflict
 			return hash<string>()(e.last_name + e.first_name + e.phone_number);
 		}
 	};
